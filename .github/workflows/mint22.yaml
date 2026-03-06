@@ -1,0 +1,69 @@
+name: Build McBopomofo (Docker Ubuntu 24.04)
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 使用與 Linux Mint 22.x 核心相同的 Ubuntu 24.04 容器
+    container:
+      image: ubuntu:24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies in Container
+        # 在容器內安裝編譯小麥輸入法所需的開發套件
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y \
+            cmake \
+            extra-cmake-modules \
+            gettext \
+            g++ \
+            ninja-build \
+            pkg-config \
+            libfcitx5core-dev \
+            libfcitx5utils-dev \
+            libfcitx5config-dev \
+            fcitx5-modules-dev \
+            libfmt-dev \
+            libgoogle-glog-dev \
+            libutf8cpp-dev \
+            libjson-c-dev \
+            libsqlite3-dev
+
+      - name: Configure and Build
+        run: |
+          # 建立編譯目錄並執行 CMake
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -G Ninja
+          
+          # 開始編譯
+          cmake --build build
+
+      - name: Prepare Artifacts
+        run: |
+          # 建立一個資料夾存放編譯好的 .so 檔案，方便下載
+          mkdir -p output
+          # 尋找編譯出的插件檔案（通常在 build 資料夾下）
+          find build -name "*.so" -exec cp {} output/ \;
+          # 如果有資料檔 (Data)，也可以一併放入
+          if [ -d "data" ]; then cp -r data output/; fi
+
+      - name: Upload Build Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcbopomofo-mint22-binary
+          path: output/
