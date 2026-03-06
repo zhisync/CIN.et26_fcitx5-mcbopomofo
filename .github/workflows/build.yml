@@ -23,10 +23,14 @@ jobs:
           mkdir build && cd build
           cmake ../ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
-          # 封裝成 DEB，這裡不直接 install
+          
+          # 1. 定義日期變數 (格式如 20240520)
+          NOW=$(date +%Y%m%d)
+          
+          # 2. 將變數帶入 pkgversion
           sudo checkinstall --pkgname=fcitx5-mcbopomofo \
-                            --pkgversion="1.0" \
-                            --pkgrelease="github-$(date +%Y%m%d)" \
+                            --pkgversion="1.0-$NOW" \
+                            --pkgrelease="1" \
                             --type=debian \
                             --install=no \
                             --default
