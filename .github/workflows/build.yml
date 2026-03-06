@@ -39,6 +39,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # 在 Artifact 名稱也加上日期，這樣下載時的 ZIP 檔名就會帶日期
-          name: mcbopomofo-package-1.0-$NOW-${{ github.run_id }} 
+          name: mcbopomofo-package-1.0-${{ github.run_id }} 
           path: build/*.deb
           
